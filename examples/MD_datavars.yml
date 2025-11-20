@@ -1,0 +1,104 @@
+
+# --- MD data
+# variables to download from NXCALS 
+# 
+event_list:
+  - - HX:FILLN
+    - HX:BMODE
+    - HX:AMODE
+# --- optics
+  - - HX:BETASTAR_IP1
+    - HX:BETASTAR_IP2
+    - HX:BETASTAR_IP5
+    - HX:BETASTAR_IP8
+  - - BFC.LHC:OpticsActive:opticsName
+
+data_list:
+
+  # --- crossing angles
+  - - LHC.RUNCONFIG:IP1-XING-V-MURAD
+    - LHC.RUNCONFIG:IP2-XING-V-MURAD
+    - LHC.RUNCONFIG:IP5-XING-H-MURAD
+    - LHC.RUNCONFIG:IP8-XING-H-MURAD
+    - LHC.RUNCONFIG:IP8-XING-V-MURAD
+
+  # --- includes crossing angles
+  - - LhcStateTracker:LHCBEAM1%
+  - - LhcStateTracker:LHCBEAM2%
+  - - LhcStateTracker:LHCBEAM:%
+  - - LhcStateTracker:State:beamProcess
+    - LhcStateTracker:State:beamProcessLength
+    - LhcStateTracker:State:beamProcessTypeCategory
+  - - LhcStateTracker:State:hyperCycle
+    - LhcStateTracker:State:opticId
+    - LhcStateTracker:State:opticName
+    - LhcStateTracker:State:secondsInBeamProcess
+  # --- beam/bunch length
+  - - LHC.BQM.B1:BUNCH_LENGTH_MEAN
+    - LHC.BQM.B2:BUNCH_LENGTH_MEAN
+  # --- bunc lengths
+  - - LHC.BQM.B1:BUNCH_LENGTHS
+    - LHC.BQM.B2:BUNCH_LENGTHS
+  # --- beam/bunch intensity (large dataset - need to be downloaded separately)
+  - - LHC.BCTDC.A6R4.B1:BEAM_INTENSITY
+    - LHC.BCTDC.A6R4.B2:BEAM_INTENSITY
+  - - LHC.BCTDC.B6R4.B1:BEAM_INTENSITY
+    - LHC.BCTDC.B6R4.B2:BEAM_INTENSITY
+  - - LHC.BCTFR.A6R4.B1:BUNCH_INTENSITY
+#  - - LHC.BCTFR.A6R4.B1:BUNCH_FILL_PATTERN
+  - - LHC.BCTFR.A6R4.B2:BUNCH_INTENSITY
+#  - - LHC.BCTFR.A6R4.B2:BUNCH_FILL_PATTERN
+  - - LHC.BCTFR.B6R4.B1:BUNCH_INTENSITY
+#  - - LHC.BCTFR.B6R4.B1:BUNCH_FILL_PATTERN
+  - - LHC.BCTFR.B6R4.B2:BUNCH_INTENSITY
+#  - - LHC.BCTFR.B6R4.B2:BUNCH_FILL_PATTERN
+  # -- luminosity
+  - - ATLAS:LUMI_TOT_INST
+#    - ATLAS.OFFLINE:LUMI_TOT_INST
+    - CMS:LUMI_TOT_INST
+  - - ATLAS:BUNCH_LUMI_INST
+    - CMS:BUNCH_LUMI_INST
+  - - ATLAS:LUMI_REGION_SIZE%
+    - CMS:LUMI_REGION_SIZE%
+  - - LUMILEVELING.IP1:ENABLE
+    - LUMILEVELING.IP2:ENABLE
+    - LUMILEVELING.IP5:ENABLE
+    - LUMILEVELING.IP8:ENABLE
+    - UCAP.ATLAS.LUMI:Pileup:pileupAvg
+    - UCAP.CMS.LUMI:Pileup:pileupAvg
+    - UCAP.LHC.LUMI.LOSSES:EffectiveCrossSection:effectiveCrossSectionB1
+    - UCAP.LHC.LUMI.LOSSES:EffectiveCrossSection:effectiveCrossSectionB2
+  - - UCAP.LHC.LUMI.LOSSES:EffectiveCrossSectionPerBunch:effectiveCrossSectionB1
+    - UCAP.LHC.LUMI.LOSSES:EffectiveCrossSectionPerBunch:effectiveCrossSectionB2
+  # --- Beam energy
+  - - LHC.BCCM.B1.A:BEAM_ENERGY
+    - LHC.BCCM.B2.A:BEAM_ENERGY
+  ## --- diamond BLMs
+  - - HC.TZ76.BLMDIAMOND2.3:AcquisitionIntegral:intSumBuf0
+    - HC.TZ76.BLMDIAMOND2.3:AcquisitionIntegral:intSumBuf1
+    - HC.TZ76.BLMDIAMOND2.5:AcquisitionIntegral:intSumBuf0
+    - HC.TZ76.BLMDIAMOND2.5:AcquisitionIntegral:intSumBuf1
+    - HC.TZ76.BLMDIAMOND3.3:AcquisitionIntegral:intSumBuf0
+    - HC.TZ76.BLMDIAMOND3.3:AcquisitionIntegral:intSumBuf1
+    - HC.TZ76.BLMDIAMOND3.5:AcquisitionIntegral:intSumBuf0
+    - HC.TZ76.BLMDIAMOND3.5:AcquisitionIntegral:intSumBuf1
+  ## --- BLM information
+  - - LHC.BLM.LIFETIME:B1_BEAM_LIFETIME
+    - LHC.BLM.LIFETIME:B2_BEAM_LIFETIME
+#    - LHC.BLM.LIFETIME:B1_CALIBRATED_LOSS
+#    - LHC.BLM.LIFETIME:B2_CALIBRATED_LOSS
+#    - LHC.BLM.LIFETIME:B1_LOSS_KW
+#    - LHC.BLM.LIFETIME:B2_LOSS_KW
+  ## -- emittances
+  - - EMITTANCE_SCAN_IP1:Emittance:HORIZONTAL_AverageEmittance_um
+    - EMITTANCE_SCAN_IP1:Emittance:VERTICAL_AverageEmittance_um
+    - EMITTANCE_SCAN_IP5:Emittance:HORIZONTAL_AverageEmittance_um
+    - EMITTANCE_SCAN_IP5:Emittance:VERTICAL_AverageEmittance_um
+  - - EMITTANCE_SCAN_IP1:Emittance:HORIZONTAL_Emittance_um
+    - EMITTANCE_SCAN_IP1:Emittance:VERTICAL_Emittance_um
+    - EMITTANCE_SCAN_IP5:Emittance:HORIZONTAL_Emittance_um
+    - EMITTANCE_SCAN_IP5:Emittance:VERTICAL_Emittance_um
+  - - LHC.BSRT.5L4.B2:BUNCH_EMITTANCE_H
+    - LHC.BSRT.5L4.B2:BUNCH_EMITTANCE_V
+  - - LHC.BSRT.5R4.B1:BUNCH_EMITTANCE_H
+    - LHC.BSRT.5R4.B1:BUNCH_EMITTANCE_V
