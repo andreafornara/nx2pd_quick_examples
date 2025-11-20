@@ -46,12 +46,15 @@ variables = [
     'HX:BETASTAR_IP5',
     'HX:BETASTAR_IP8',
 
-    # Crossing angles at main IPs
-    'LHC.RUNCONFIG:IP1-XING-V-MURAD',
-    'LHC.RUNCONFIG:IP2-XING-V-MURAD',
-    'LHC.RUNCONFIG:IP5-XING-H-MURAD',
-    'LHC.RUNCONFIG:IP8-XING-H-MURAD',
-    'LHC.RUNCONFIG:IP8-XING-V-MURAD',
+    # Crossing angles at main IPs (new LhcStateTracker variables - both H and V for all IPs)
+    'LhcStateTracker:LHCBEAM:IP1-XING-H-MURAD:value',
+    'LhcStateTracker:LHCBEAM:IP1-XING-V-MURAD:value',
+    'LhcStateTracker:LHCBEAM:IP2-XING-H-MURAD:value',
+    'LhcStateTracker:LHCBEAM:IP2-XING-V-MURAD:value',
+    'LhcStateTracker:LHCBEAM:IP5-XING-H-MURAD:value',
+    'LhcStateTracker:LHCBEAM:IP5-XING-V-MURAD:value',
+    'LhcStateTracker:LHCBEAM:IP8-XING-H-MURAD:value',
+    'LhcStateTracker:LHCBEAM:IP8-XING-V-MURAD:value',
 
     # Beam intensity
     'LHC.BCTDC.A6R4.B1:BEAM_INTENSITY',
@@ -211,32 +214,40 @@ plt.show()
 print("\n" + "="*80)
 print("PLOT 2: Crossing Angles at Main IPs")
 print("="*80)
-
-fig2, ax2 = plt.subplots(figsize=(14, 6))
-
+fig2, ax2 = plt.subplots(figsize=(18, 10))
 xing_vars = [
-    ('LHC.RUNCONFIG:IP1-XING-V-MURAD', 'IP1 (V)', 'blue', 'o'),
-    ('LHC.RUNCONFIG:IP2-XING-V-MURAD', 'IP2 (V)', 'orange', 'v'),
-    ('LHC.RUNCONFIG:IP5-XING-H-MURAD', 'IP5 (H)', 'red', 's'),
-    ('LHC.RUNCONFIG:IP8-XING-H-MURAD', 'IP8 (H)', 'green', '^'),
-    ('LHC.RUNCONFIG:IP8-XING-V-MURAD', 'IP8 (V)', 'purple', 'd'),
+    ('LhcStateTracker:LHCBEAM:IP1-XING-H-MURAD:value', 'IP1 (H)', 'blue', 'o', '--'),
+    ('LhcStateTracker:LHCBEAM:IP1-XING-V-MURAD:value', 'IP1 (V)', 'lightblue', 'o', '--'),
+    ('LhcStateTracker:LHCBEAM:IP2-XING-H-MURAD:value', 'IP2 (H)', 'orange', 'o', '--'),
+    ('LhcStateTracker:LHCBEAM:IP2-XING-V-MURAD:value', 'IP2 (V)', 'orange', 'o', '-'),
+    ('LhcStateTracker:LHCBEAM:IP5-XING-H-MURAD:value', 'IP5 (H)', 'coral', 'o', '--'),
+    ('LhcStateTracker:LHCBEAM:IP5-XING-V-MURAD:value', 'IP5 (V)', 'red', 'o', '-'),
+    ('LhcStateTracker:LHCBEAM:IP8-XING-H-MURAD:value', 'IP8 (H)', 'lightgreen', 'o', '--'),
+    ('LhcStateTracker:LHCBEAM:IP8-XING-V-MURAD:value', 'IP8 (V)', 'green', 'o', '-'),
 ]
 
-for var_name, label, color, marker in xing_vars:
+for var_name, label, color, marker, linestyle in xing_vars:
     if var_name in df.columns:
         data = df[var_name].dropna()
         if len(data) > 0:
-            ax2.plot(data.index, data.values, color=color, marker=marker,
-                    markersize=4, linewidth=2, label=label, alpha=0.8)
-            print(f"  {label}: {data.iloc[-1]:.1f} μrad")
+            # Mask zero values (angles not used)
+            data_nonzero = data[data.abs() > 0.1]  # Use small threshold to account for numerical noise
+            if len(data_nonzero) > 0:
+                ax2.plot(data_nonzero.index, data_nonzero.values, color=color, marker=marker,
+                        markersize=4, linewidth=2, label=label, alpha=0.8, linestyle=linestyle)
+                # Print final non-zero value
+                final_val = data_nonzero.iloc[-1]
+                print(f"  {label}: {final_val:.1f} μrad")
 
-ax2.set_ylabel('Crossing Angle [μrad]', fontsize=12)
-ax2.set_xlabel('Time (HH:MM)', fontsize=12)
-ax2.set_title(f'{title_info}\nCrossing Angles at Main Interaction Points', fontsize=13, fontweight='bold')
-ax2.legend(loc='best', fontsize=11)
+ax2.set_ylabel('Crossing Angle [μrad]', fontsize=18)
+ax2.set_xlabel('Time (HH:MM)', fontsize=18)
+ax2.set_title(f'{title_info}\nCrossing Angles at Main Interaction Points', fontsize=18, fontweight='bold')
+ax2.legend(loc='best', fontsize=18, ncol=2)
 ax2.grid(True, alpha=0.3)
 ax2.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
 ax2.xaxis.set_major_locator(mdates.HourLocator(interval=1))
+#axes fontsize
+ax2.tick_params(axis='both', which='major', labelsize=18)
 plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45, ha='right')
 
 plt.tight_layout()
@@ -387,15 +398,18 @@ ax_s1.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
 
 # Panel 2: Crossing Angles
 ax_s2 = fig5.add_subplot(gs[0, 1])
-for var_name, label, color, marker in xing_vars:
+for var_name, label, color, marker, linestyle in xing_vars:
     if var_name in df.columns:
         data = df[var_name].dropna()
         if len(data) > 0:
-            ax_s2.plot(data.index, data.values, color=color, marker=marker,
-                      markersize=3, linewidth=1.5, label=label)
+            # Mask zero values (angles not used)
+            data_nonzero = data[data.abs() > 0.1]
+            if len(data_nonzero) > 0:
+                ax_s2.plot(data_nonzero.index, data_nonzero.values, color=color, marker=marker,
+                          markersize=2, linewidth=1.5, label=label, linestyle=linestyle, alpha=0.8)
 ax_s2.set_ylabel('Crossing Angle [μrad]', fontsize=10)
 ax_s2.set_title('Crossing Angles', fontsize=11, fontweight='bold')
-ax_s2.legend(loc='best', fontsize=8)
+ax_s2.legend(loc='best', fontsize=7, ncol=2)
 ax_s2.grid(True, alpha=0.3)
 ax_s2.tick_params(axis='x', labelsize=8)
 ax_s2.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
@@ -461,9 +475,9 @@ print("\n" + "="*80)
 print(f"FILL {fill_number} - ANALYSIS COMPLETE")
 print("="*80)
 print(f"\nFill Information:")
-print(f"  Start time: {fill_start}")
+print(f"  Fill start time: {fill_start}")
 print(f"  Analysis window: {analysis_start} to {analysis_end}")
-print(f"\nGenerated plots:")
+print(f"  Analysis duration: {analysis_duration_hours:.2f} hours")
 print("\nDone!")
 
 # %%

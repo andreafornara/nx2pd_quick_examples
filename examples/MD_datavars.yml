@@ -15,12 +15,21 @@ event_list:
 
 data_list:
 
-  # --- crossing angles
+  # --- crossing angles (old )
   - - LHC.RUNCONFIG:IP1-XING-V-MURAD
     - LHC.RUNCONFIG:IP2-XING-V-MURAD
     - LHC.RUNCONFIG:IP5-XING-H-MURAD
     - LHC.RUNCONFIG:IP8-XING-H-MURAD
     - LHC.RUNCONFIG:IP8-XING-V-MURAD
+  # --- crossing angles (new - LhcStateTracker for all phases)
+  - - LhcStateTracker:LHCBEAM:IP1-XING-H-MURAD:value
+    - LhcStateTracker:LHCBEAM:IP1-XING-V-MURAD:value
+    - LhcStateTracker:LHCBEAM:IP2-XING-H-MURAD:value
+    - LhcStateTracker:LHCBEAM:IP2-XING-V-MURAD:value
+    - LhcStateTracker:LHCBEAM:IP5-XING-H-MURAD:value
+    - LhcStateTracker:LHCBEAM:IP5-XING-V-MURAD:value
+    - LhcStateTracker:LHCBEAM:IP8-XING-H-MURAD:value
+    - LhcStateTracker:LHCBEAM:IP8-XING-V-MURAD:value
 
   # --- includes crossing angles
   - - LhcStateTracker:LHCBEAM1%
