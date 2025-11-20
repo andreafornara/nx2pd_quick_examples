@@ -38,7 +38,7 @@ fill_number = 10993
 
 # Define time window for analysis (optional)
 start_mode = 'STABLE'  # Analyze from STABLE beams
-end_mode = None        # Until end of fill
+end_mode = 'DUMP'        # Until end of fill
 
 # Plotting parameter: plot one snapshot every N hours
 every_hours = 1
@@ -264,9 +264,8 @@ for flag, beam in zip(["R", "L"], [1, 2]):
 
             ax_left.fill_between(mean_emit.index, mean_emit - std_emit, mean_emit + std_emit,
                                 color="k", alpha=0.3)
-            ax_left.plot(mean_emit, c="k", lw=2, label="Colliding IP1/5")
+            ax_left.plot(mean_emit, c="k", lw=2)
             ax_left.grid(True, alpha=0.3)
-            ax_left.legend(fontsize=14)
 
     ax_left.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
     ax_left.xaxis.set_major_locator(MaxNLocator(5))
@@ -314,9 +313,8 @@ for flag, beam in zip(["R", "L"], [1, 2]):
 
             ax_left.fill_between(mean_emit.index, mean_emit - std_emit, mean_emit + std_emit,
                                 color="k", alpha=0.3)
-            ax_left.plot(mean_emit, c="k", lw=2, label="Colliding IP1/5")
+            ax_left.plot(mean_emit, c="k", lw=2)
             ax_left.grid(True, alpha=0.3)
-            ax_left.legend(fontsize=14)
 
     ax_left.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
     ax_left.xaxis.set_major_locator(MaxNLocator(5))
