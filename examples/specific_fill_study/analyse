@@ -1,0 +1,118 @@
+# %%
+import fillingpatterns as fp
+import json
+
+with open('filling.json', 'r') as f:
+    my_filling = json.load(f)
+
+# %%
+import matplotlib.pyplot as plt
+
+# Define zoom ranges
+zoom_ranges = [(200, 306), 
+               (1094, 1094+106), 
+               (1985, 1985+106), 
+               (2876, 2876+106)]
+
+# Create figure with 4 columns (one per zoom range) and 2 rows (one per beam)
+fig, axes = plt.subplots(2, 4, figsize=(10, 6))
+
+for i, (x_min, x_max) in enumerate(zoom_ranges):
+    # Beam 1 (top row)
+    axes[0, i].stairs(my_filling['schemebeam1'], color='blue')
+    axes[0, i].set_xlim(x_min, x_max)
+    axes[0, i].set_title(f'Beam 1: {x_min}-{x_max}')
+    axes[0, i].set_ylabel('Beam 1')
+    axes[0, i].grid(True, alpha=0.3)
+
+    # Beam 2 (bottom row)
+    axes[1, i].stairs(my_filling['schemebeam2'], color='red')
+    axes[1, i].set_xlim(x_min, x_max)
+    axes[1, i].set_title(f'Beam 2: {x_min}-{x_max}')
+    axes[1, i].set_ylabel('Beam 2')
+    axes[1, i].set_xlabel('Bucket number')
+    axes[1, i].grid(True, alpha=0.3)
+
+plt.tight_layout()
+# can you create 4 zooms on x axis to see better the filling scheme?
+# %%
+my_filling = fp.FillingPattern(my_filling['schemebeam1'], my_filling['schemebeam2']) 
+# %%
+# print all attributes of patt
+print(f'Number of B1 bunches: {my_filling.b1.n_bunches}')
+print(f'Number of B2 bunches: {my_filling.b2.n_bunches}')
+print(f'Number of collisions at ATLAS: {my_filling.n_coll_ATLAS}')
+print(f'Number of collisions at LHCb: {my_filling.n_coll_LHCb}')
+print(f'Number of collisions at ALICE: {my_filling.n_coll_ALICE}')
+# %%
+my_filling.compute_beam_beam_schedule(n_lr_per_side=16) 
+# %%
+df_b1 = my_filling.b1.bb_schedule
+
+bunches_b1_atlas = df_b1[df_b1['collides in ATLAS/CMS']].index.tolist()
+bunches_b1_alice = df_b1[df_b1['collides in ALICE']].index.tolist()
+bunches_b1_lhcb = df_b1[df_b1['collides in LHCB']].index.tolist()
+
+
+bunches_b2_atlas = my_filling.b2.bb_schedule[my_filling.b2.bb_schedule['collides in ATLAS/CMS']].index.tolist()
+bunches_b2_alice = my_filling.b2.bb_schedule[my_filling.b2.bb_schedule['collides in ALICE']].index.tolist()
+bunches_b2_lhcb = my_filling.b2.bb_schedule[my_filling.b2.bb_schedule['collides in LHCB']].index.tolist()
+
+# make a vector of zeros of length 3564 and put 1 in the positions of the bunches colliding in ALICE
+alice_vector_b1 = [0]*3564
+for b in bunches_b1_alice:
+    alice_vector_b1[b] = 1
+lhcb_vector_b1 = [0]*3564
+for b in bunches_b1_lhcb:
+    lhcb_vector_b1[b] = 1
+    
+alice_vector_b2 = [0]*3564
+for b in bunches_b2_alice:
+    alice_vector_b2[b] = 1
+lhcb_vector_b2 = [0]*3564
+for b in bunches_b2_lhcb:
+    lhcb_vector_b2[b] = 1
+# %%
+ 
+# Create figure with 4 columns (one per zoom range) and 2 rows (one per beam)
+fig, axes = plt.subplots(2, 4, figsize=(10, 6))
+
+for i, (x_min, x_max) in enumerate(zoom_ranges):
+    # Beam 1 (top row)
+    axes[0, i].stairs(alice_vector_b1, color='blue')
+    axes[0, i].set_xlim(x_min, x_max)
+    axes[0, i].set_title(f'Beam 1: {x_min}-{x_max}')
+    axes[0, i].set_ylabel('Beam 1')
+    axes[0, i].grid(True, alpha=0.3)
+
+    # Beam 2 (bottom row)
+    axes[1, i].stairs(alice_vector_b2, color='red')
+    axes[1, i].set_xlim(x_min, x_max)
+    axes[1, i].set_title(f'Beam 2: {x_min}-{x_max}')
+    axes[1, i].set_ylabel('Beam 2')
+    axes[1, i].set_xlabel('Bucket number')
+    axes[1, i].grid(True, alpha=0.3)
+
+plt.tight_layout()
+
+# %%
+fig, axes = plt.subplots(2, 4, figsize=(10, 6))
+
+for i, (x_min, x_max) in enumerate(zoom_ranges):
+    # Beam 1 (top row)
+    axes[0, i].stairs(lhcb_vector_b1, color='blue')
+    axes[0, i].set_xlim(x_min, x_max)
+    axes[0, i].set_title(f'Beam 1: {x_min}-{x_max}')
+    axes[0, i].set_ylabel('Beam 1')
+    axes[0, i].grid(True, alpha=0.3)
+
+    # Beam 2 (bottom row)
+    axes[1, i].stairs(lhcb_vector_b2, color='red')
+    axes[1, i].set_xlim(x_min, x_max)
+    axes[1, i].set_title(f'Beam 2: {x_min}-{x_max}')
+    axes[1, i].set_ylabel('Beam 2')
+    axes[1, i].set_xlabel('Bucket number')
+    axes[1, i].grid(True, alpha=0.3)
+
+plt.tight_layout()
+# %%
