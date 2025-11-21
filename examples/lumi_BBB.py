@@ -2,7 +2,7 @@
 Bunch-by-Bunch Luminosity Analysis
 
 This script performs bunch-by-bunch analysis of instantaneous luminosity
-for ATLAS and CMS experiments.
+for ATLAS, CMS, and LHCb experiments.
 
 Each plot shows:
 - Left: Mean luminosity evolution (averaged over colliding bunches)
@@ -48,10 +48,12 @@ variables = [
     # Total luminosity
     'ATLAS:LUMI_TOT_INST',
     'CMS:LUMI_TOT_INST',
+    'LHCB:LUMI_TOT_INST',
 
     # Bunch-by-bunch luminosity
     'ATLAS:BUNCH_LUMI_INST',
     'CMS:BUNCH_LUMI_INST',
+    'LHCB:BUNCH_LUMI_INST',
 
     # Additional context - filling scheme
     'LHC.BCTFR.A6R4.B1:BUNCH_INTENSITY',
@@ -149,13 +151,13 @@ except Exception as e:
     idx_b2_coll = np.arange(0, 100)
 
 # %%
-# Create the combined plot (ATLAS and CMS)
+# Create the combined plot (ATLAS, CMS, and LHCb)
 print("\n" + "="*80)
 print("Creating Bunch-by-Bunch Luminosity Plot")
 print("="*80)
 
-fig, ax = plt.subplots(figsize=(18, 16), nrows=2, ncols=2,
-                       gridspec_kw={'height_ratios': [1, 1], 'width_ratios': [0.5, 1]},
+fig, ax = plt.subplots(figsize=(18, 22), nrows=3, ncols=2,
+                       gridspec_kw={'height_ratios': [1, 1, 1], 'width_ratios': [0.5, 1]},
                        sharey=True)
 plt.suptitle(title_info, fontsize=20, fontweight='bold')
 
@@ -265,6 +267,59 @@ if 'CMS:BUNCH_LUMI_INST' in df.columns:
             if len(hourly_data) > 0:
                 ax_right.plot(idx_b2, hourly_data.iloc[0], '.', ms=4, c=colors[i], alpha=0.5)
 
+# ===== LHCb =====
+# Left plot: Mean luminosity evolution
+ax_left = ax[2, 0]
+ax_left.set_xlabel("Time", fontsize=12)
+ax_left.set_ylabel(r"$\mathcal{L}$ (10$^{35}$ m$^{-2}$ s$^{-1}$)", fontsize=12)
+ax_left.set_title("LHCb - Mean Luminosity", fontsize=13, fontweight='bold')
+
+if 'LHCB:BUNCH_LUMI_INST' in df.columns:
+    data_lhcb = df['LHCB:BUNCH_LUMI_INST'].dropna()
+    if len(data_lhcb) > 0:
+        # Calculate mean and std over colliding bunches (filter out zeros)
+        mean_lumi = data_lhcb.apply(lambda x: np.mean(x['elements'][idx_b2_coll][x['elements'][idx_b2_coll] != 0]) if isinstance(x, dict) and 'elements' in x else np.nan)
+        std_lumi = data_lhcb.apply(lambda x: np.std(x['elements'][idx_b2_coll][x['elements'][idx_b2_coll] != 0]) if isinstance(x, dict) and 'elements' in x else np.nan)
+
+        # Convert from Hz/ub to 10^35 m^-2 s^-1
+        mean_lumi = mean_lumi * 1e-1
+        std_lumi = std_lumi * 1e-1
+
+        ax_left.fill_between(mean_lumi.index, mean_lumi - std_lumi, mean_lumi + std_lumi,
+                            color="g", alpha=0.3)
+        ax_left.plot(mean_lumi, c="g", lw=2, label="LHCb")
+        ax_left.grid(True, alpha=0.3)
+        ax_left.legend(fontsize=14)
+
+ax_left.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+ax_left.xaxis.set_major_locator(MaxNLocator(5))
+plt.setp(ax_left.xaxis.get_majorticklabels(), rotation=45, ha='right')
+
+# Right plot: Bunch-by-bunch snapshots (one per hour)
+ax_right = ax[2, 1]
+ax_right.set_xlabel("Bunch slot (25 ns)", fontsize=12)
+ax_right.set_title("LHCb - BBB Luminosity (one snapshot/hour)", fontsize=13, fontweight='bold')
+ax_right.grid(True, alpha=0.3)
+
+if 'LHCB:BUNCH_LUMI_INST' in df.columns:
+    data_lhcb = df['LHCB:BUNCH_LUMI_INST'].dropna()
+    if len(data_lhcb) > 0:
+        # Extract elements and convert to 10^35 m^-2 s^-1
+        data_processed = data_lhcb.apply(lambda x: x['elements'][idx_b2] * 1e-1 if isinstance(x, dict) and 'elements' in x else np.nan)
+
+        total_hours = int((data_processed.index[-1] - data_processed.index[0]).total_seconds() // 3600)
+        colors = cm.rainbow(np.linspace(0, 1, total_hours + 1))
+        start_time = data_processed.index[0]
+
+        # Plot one snapshot per hour
+        for i in range(0, total_hours + 1, every_hours):
+            time_begin = start_time + pd.Timedelta(hours=i)
+            time_end = time_begin + pd.Timedelta(hours=1)
+            hourly_data = data_processed[(data_processed.index >= time_begin) & (data_processed.index < time_end)]
+
+            if len(hourly_data) > 0:
+                ax_right.plot(idx_b2, hourly_data.iloc[0], '.', ms=4, c=colors[i], alpha=0.5)
+
 plt.tight_layout()
 plt.show()
 
@@ -274,7 +329,7 @@ print("\n" + "="*80)
 print(f"Luminosity Summary for Fill {fill_number}")
 print("="*80)
 
-for exp in ['ATLAS', 'CMS']:
+for exp in ['ATLAS', 'CMS', 'LHCB']:
     var_name = f'{exp}:BUNCH_LUMI_INST'
     if var_name in df.columns:
         data = df[var_name].dropna()
