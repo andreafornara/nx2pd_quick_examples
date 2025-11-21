@@ -16,6 +16,23 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from nxcals.spark_session_builder import get_or_create, Flavor
 
+# Import configuration and helper functions
+import sys
+import os
+import yaml
+
+# Load configuration from YAML file
+config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.yml')
+with open(config_path, 'r') as f:
+    config = yaml.safe_load(f)
+
+FILL_NUMBER = config['fill_number']
+START_MODE = config['start_mode']
+END_MODE = config['end_mode']
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from useful_functions import plot_time_windows_background
+
 # Create spark session (using LOCAL flavor for simplicity)
 print("Creating Spark session...")
 spark = get_or_create(flavor=Flavor.LOCAL)
@@ -24,7 +41,10 @@ print("Spark session created.")
 
 # %%
 # Define the fill number and variables to retrieve
-fill_number = 10993
+# These values are imported from config.py
+fill_number = FILL_NUMBER
+start_mode = START_MODE
+end_mode = END_MODE
 
 # Variable names for optics and beam parameters
 variables = [
@@ -44,8 +64,45 @@ print(f"Retrieved {len(df)} data points.")
 
 # Get fill timing information
 fill_info = sk.get_fill_time(fill_number)
+
+# Determine analysis time window based on start_mode and end_mode
+analysis_start = fill_info['start']
+analysis_end = fill_info['end']
+
+if start_mode is not None or end_mode is not None:
+    modes = fill_info.get('modes', [])
+
+    # Find start time
+    if start_mode is not None:
+        for mode_info in modes:
+            if mode_info['mode'] == start_mode:
+                analysis_start = mode_info['start']
+                print(f"\n>>> Analysis START configured: {start_mode} mode")
+                print(f"    Start time: {analysis_start}")
+                break
+        else:
+            print(f"\n>>> WARNING: Start mode '{start_mode}' not found, using fill start")
+            print(f"    Start time: {analysis_start}")
+
+    # Find end time
+    if end_mode is not None:
+        for mode_info in modes:
+            if mode_info['mode'] == end_mode:
+                analysis_end = mode_info['end']
+                print(f">>> Analysis END configured: {end_mode} mode")
+                print(f"    End time: {analysis_end}")
+                break
+        else:
+            print(f">>> WARNING: End mode '{end_mode}' not found, using fill end")
+            print(f"    End time: {analysis_end}")
+
+# Filter dataframe to analysis window
+df = df[(df.index >= analysis_start) & (df.index <= analysis_end)]
+print(f"Filtered to analysis window: {len(df)} data points.")
+
+# Calculate duration and create title info
 fill_start = fill_info['start']
-fill_duration_hours = fill_info['duration'].total_seconds() / 3600
+analysis_duration_hours = (analysis_end - analysis_start).total_seconds() / 3600
 
 # Display unique optics used during the fill
 if 'LhcStateTracker:State:opticName' in df.columns:
@@ -60,7 +117,13 @@ fig1, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 8), sharex=True)
 
 # Format the fill start date and duration for title
 fill_date_str = fill_start.strftime('%Y-%m-%d')
-title_info = f'Fill {fill_number} | {fill_date_str} | Duration: {fill_duration_hours:.2f}h'
+
+# Update title based on whether we're analyzing full fill or a subset
+if start_mode is not None or end_mode is not None:
+    mode_range = f"{start_mode or 'START'} → {end_mode or 'END'}"
+    title_info = f'Fill {fill_number} | {fill_date_str} | {mode_range} | Duration: {analysis_duration_hours:.2f}h'
+else:
+    title_info = f'Fill {fill_number} | {fill_date_str} | Duration: {analysis_duration_hours:.2f}h'
 
 # Subplot 1: Beam Energy
 if 'LHC.BCCM.B1.A:BEAM_ENERGY' in df.columns:

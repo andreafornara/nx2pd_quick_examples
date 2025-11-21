@@ -1,0 +1,52 @@
+# ============================================================================
+# Common configuration file for all analysis scripts
+# ============================================================================
+# This file contains shared parameters that are used across multiple analysis
+# scripts. Modify these values to change the analysis settings for all scripts.
+
+# ============================================================================
+# FILL CONFIGURATION
+# ============================================================================
+
+# Fill number to analyze
+fill_number: 10993
+
+# Time window for analysis
+# Set to null to use full fill, or specify start/end modes from fill_info['modes']
+# Common modes: 'SETUP', 'INJPILOT', 'INJPHYS', 'PRERAMP', 'RAMP', 'FLATTOP',
+#               'SQUEEZE', 'ADJUST', 'STABLE', 'BEAMDUMP', 'RAMPDOWN', 'DUMP'
+start_mode: 'STABLE'  # Analyze from this mode (null = fill start)
+end_mode: null        # Analyze until this mode (null = fill end)
+
+# ============================================================================
+# PLOTTING CONFIGURATION
+# ============================================================================
+
+# For bunch-by-bunch plots: plot one snapshot every N hours
+snapshot_interval_hours: 1
+
+# Figure DPI for saved plots
+figure_dpi: 150
+
+# ============================================================================
+# SPARK CONFIGURATION
+# ============================================================================
+
+# Spark configuration for large data analysis (bunch-by-bunch data)
+spark_large_memory:
+  spark.driver.maxResultSize: '8g'
+  spark.executor.memory: '8g'
+  spark.driver.memory: '16g'
+  spark.executor.instances: '20'
+  spark.executor.cores: '2'
+
+# ============================================================================
+# FUTURE PARAMETERS
+# ============================================================================
+
+# Add any additional common parameters here as needed
+# Examples:
+# - Data quality filters
+# - Custom variable lists
+# - Plot styling preferences
+# - Export settings

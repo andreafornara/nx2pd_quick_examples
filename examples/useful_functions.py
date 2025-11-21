@@ -1,3 +1,6 @@
+import matplotlib.pyplot as plt
+
+
 def plot_time_windows_background(ax, df_column, colormap=None, alpha=0.3, zorder=-1):
     """
     Plot colored vertical bars as a background for time series plots.

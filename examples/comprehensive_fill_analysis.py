@@ -21,6 +21,20 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from nxcals.spark_session_builder import get_or_create, Flavor
 
+# Import configuration
+import sys
+import os
+import yaml
+
+# Load configuration from YAML file
+config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.yml')
+with open(config_path, 'r') as f:
+    config = yaml.safe_load(f)
+
+FILL_NUMBER = config['fill_number']
+START_MODE = config['start_mode']
+END_MODE = config['end_mode']
+
 # Create spark session (using LOCAL flavor for simplicity)
 print("Creating Spark session...")
 spark = get_or_create(flavor=Flavor.LOCAL)
@@ -28,14 +42,11 @@ sk = nx.SparkIt(spark)
 print("Spark session created.")
 
 # %%
-# Define the fill number
-fill_number = 10993
-
-# Define time window for analysis (optional)
-# Set to None to use full fill, or specify start/end modes from fill_info['modes']
-# Examples: 'SETUP', 'INJPHYS', 'STABLE', 'BEAMDUMP', etc.
-start_mode = 'SETUP' # None = use fill start, or specify mode like 'SETUP', 'INJPHYS', etc.
-end_mode = 'BEAMDUMP'    # None = use fill end, or specify mode like 'STABLE', 'BEAMDUMP', etc.
+# Define the fill number and analysis parameters
+# These values are imported from config.py
+fill_number = FILL_NUMBER
+start_mode = START_MODE
+end_mode = END_MODE
 
 # Define all variables needed for the analysis
 variables = [
@@ -92,20 +103,24 @@ if start_mode is not None or end_mode is not None:
         for mode_info in modes:
             if mode_info['mode'] == start_mode:
                 analysis_start = mode_info['start']
-                print(f"Analysis start: {start_mode} mode at {analysis_start}")
+                print(f"\n>>> Analysis START configured: {start_mode} mode")
+                print(f"    Start time: {analysis_start}")
                 break
         else:
-            print(f"WARNING: Start mode '{start_mode}' not found, using fill start")
+            print(f"\n>>> WARNING: Start mode '{start_mode}' not found, using fill start")
+            print(f"    Start time: {analysis_start}")
 
     # Find end time
     if end_mode is not None:
         for mode_info in modes:
             if mode_info['mode'] == end_mode:
                 analysis_end = mode_info['end']
-                print(f"Analysis end: {end_mode} mode at {analysis_end}")
+                print(f">>> Analysis END configured: {end_mode} mode")
+                print(f"    End time: {analysis_end}")
                 break
         else:
-            print(f"WARNING: End mode '{end_mode}' not found, using fill end")
+            print(f">>> WARNING: End mode '{end_mode}' not found, using fill end")
+            print(f"    End time: {analysis_end}")
 
 # Filter dataframe to analysis window
 df = df[(df.index >= analysis_start) & (df.index <= analysis_end)]
